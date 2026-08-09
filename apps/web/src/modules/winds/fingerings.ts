@@ -21,6 +21,11 @@ export interface WindChart {
   thumbs: number[];
   fingerings: Fingering[];
   note?: string;
+  /**
+   * Pendant ocarinas are charted as the round body itself: finger holes
+   * inside the outline, thumb holes outside it (they sit on the back).
+   */
+  pendant?: boolean;
 }
 
 /** 6-hole English pendant ocarina in C (two thumbs, four fingers). */
@@ -29,6 +34,7 @@ export const OCARINA_6: WindChart = {
   title: "6-hole ocarina (C)",
   holeLabels: ["LT", "RT", "L1", "L2", "R1", "R2"],
   thumbs: [0, 1],
+  pendant: true,
   note: "English fingering; pendant makers vary — edit fingerings.ts to match yours",
   fingerings: [
     { midi: 72, holes: [1, 1, 1, 1, 1, 1] }, // C5

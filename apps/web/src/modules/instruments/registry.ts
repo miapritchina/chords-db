@@ -1,6 +1,6 @@
 import type { ChordInstrumentId } from "@/modules/chords/types";
 
-export type MelodicLayout = "piano" | "kalimba" | "ribbon" | "wind";
+export type MelodicLayout = "piano" | "kalimba" | "ribbon" | "wind" | "guqin";
 export type Voice = "pluck" | "breath" | "bow";
 
 export interface Instrument {
@@ -115,9 +115,9 @@ export const INSTRUMENTS: Instrument[] = [
     family: "strings",
     emoji: "🏮",
     range: [36, 76], // open C2, harmonics/stopped notes far above
-    layout: "ribbon",
+    layout: "guqin",
     voice: "pluck",
-    notes: "open strings C2 D2 F2 G2 A2 C3 D3",
+    notes: "zheng diao 正调 · C2 D2 F2 G2 A2 C3 D3",
   },
   {
     id: "guitar",

@@ -18,6 +18,7 @@ import { PianoKeys } from "@/modules/instruments/PianoKeys";
 import { MELODIC_INSTRUMENTS, instrumentById } from "@/modules/instruments/registry";
 import { WIND_CHARTS } from "@/modules/winds/fingerings";
 import { WindFingeringChart } from "@/modules/winds/WindFingeringChart";
+import { GuqinDiagram } from "@/modules/guqin/GuqinDiagram";
 import {
   cellsToEvents,
   melodyDurationSec,
@@ -211,6 +212,14 @@ export function MelodiesPage() {
               highlight={pcs}
               rootPc={rootPc}
               onPlay={(m) => playNote(m, 0.9, voice)}
+            />
+          )}
+          {instrument.layout === "guqin" && (
+            <GuqinDiagram
+              highlight={pcs}
+              rootPc={rootPc}
+              onPlay={(m) => playNote(m, 1.4, voice)}
+              className="mx-auto w-full max-w-3xl"
             />
           )}
           {instrument.layout === "ribbon" && (
