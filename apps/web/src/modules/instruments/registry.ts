@@ -1,6 +1,6 @@
 import type { ChordInstrumentId } from "@/modules/chords/types";
 
-export type MelodicLayout = "piano" | "kalimba" | "ribbon";
+export type MelodicLayout = "piano" | "kalimba" | "ribbon" | "wind";
 export type Voice = "pluck" | "breath" | "bow";
 
 export interface Instrument {
@@ -64,30 +64,40 @@ export const INSTRUMENTS: Instrument[] = [
     name: "Ocarina",
     family: "winds",
     emoji: "🍠",
-    range: [69, 89], // alto C: A4–F6
-    layout: "ribbon",
+    range: [72, 84], // 6-hole pendant in C: C5–C6
+    layout: "wind",
     voice: "breath",
-    notes: "alto C range",
+    notes: "6-hole pendant in C",
+  },
+  {
+    id: "recorder",
+    name: "Recorder",
+    family: "winds",
+    emoji: "🪈",
+    range: [72, 88], // soprano: C5–E6 charted; goes higher
+    layout: "wind",
+    voice: "breath",
+    notes: "soprano, baroque fingering",
   },
   {
     id: "dizi",
     name: "Dizi",
     family: "winds",
     emoji: "🎋",
-    range: [69, 93], // D dizi: A4 up, approx
-    layout: "ribbon",
+    range: [69, 90], // D dizi: A4–F#6 charted
+    layout: "wind",
     voice: "breath",
-    notes: "D dizi, approximate range",
+    notes: "D dizi · 筒音作5",
   },
   {
     id: "xiao",
     name: "Xiao",
     family: "winds",
     emoji: "🎍",
-    range: [62, 86], // G xiao: D4 up, approx
-    layout: "ribbon",
+    range: [62, 84], // G xiao: D4–C6 charted
+    layout: "wind",
     voice: "breath",
-    notes: "G xiao, approximate range",
+    notes: "G xiao · 筒音作5",
   },
   {
     id: "kalimba",

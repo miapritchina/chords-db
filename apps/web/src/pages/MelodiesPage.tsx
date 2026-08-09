@@ -16,6 +16,8 @@ import { playMelody, playNote } from "@/modules/audio/synth";
 import { KalimbaTines } from "@/modules/instruments/KalimbaTines";
 import { PianoKeys } from "@/modules/instruments/PianoKeys";
 import { MELODIC_INSTRUMENTS, instrumentById } from "@/modules/instruments/registry";
+import { WIND_CHARTS } from "@/modules/winds/fingerings";
+import { WindFingeringChart } from "@/modules/winds/WindFingeringChart";
 import {
   cellsToEvents,
   melodyDurationSec,
@@ -201,6 +203,14 @@ export function MelodiesPage() {
               rootPc={rootPc}
               onPlay={(m) => playNote(m, 0.9, voice)}
               className="mx-auto max-w-xl"
+            />
+          )}
+          {instrument.layout === "wind" && WIND_CHARTS[instrument.id] && (
+            <WindFingeringChart
+              chart={WIND_CHARTS[instrument.id]}
+              highlight={pcs}
+              rootPc={rootPc}
+              onPlay={(m) => playNote(m, 0.9, voice)}
             />
           )}
           {instrument.layout === "ribbon" && (
