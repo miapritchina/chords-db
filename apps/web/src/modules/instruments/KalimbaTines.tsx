@@ -1,11 +1,14 @@
 import { kalimbaTines } from "./kalimba";
 import { midiToNote, midiToPitchClass } from "@/modules/chords/notes";
+import type { MelodyTrace } from "@/modules/melody/trace";
+import { traceOpacity } from "@/modules/melody/trace";
 import { cn } from "@/lib/utils";
 
 interface KalimbaTinesProps {
   /** Pitch classes to highlight (the scale). */
   highlight?: Set<number>;
   rootPc?: number;
+  trace?: MelodyTrace;
   onPlay?: (midi: number) => void;
   className?: string;
 }
@@ -14,7 +17,7 @@ interface KalimbaTinesProps {
  * A 17-key kalimba in C, drawn as it sits in your hands: longest tine in
  * the middle, notes ascending outward left/right. Tines are clickable.
  */
-export function KalimbaTines({ highlight, rootPc, onPlay, className }: KalimbaTinesProps) {
+export function KalimbaTines({ highlight, rootPc, trace, onPlay, className }: KalimbaTinesProps) {
   const tines = [...kalimbaTines()].sort((a, b) => a.slot - b.slot);
   const TW = 22;
   const GAP = 4;
@@ -81,6 +84,23 @@ export function KalimbaTines({ highlight, rootPc, onPlay, className }: KalimbaTi
             >
               {midiToNote(t.midi)}
             </text>
+            {(() => {
+              const ti = trace?.order.get(t.midi);
+              if (ti === undefined || !trace) return null;
+              return (
+                <g opacity={traceOpacity(ti, trace.size)} pointerEvents="none">
+                  <circle cx={x + TW / 2} cy={30 + h / 2} r={8} className="fill-foreground" />
+                  <text
+                    x={x + TW / 2}
+                    y={30 + h / 2 + 3}
+                    textAnchor="middle"
+                    className="fill-background text-[9px] font-bold"
+                  >
+                    {ti + 1}
+                  </text>
+                </g>
+              );
+            })()}
           </g>
         );
       })}

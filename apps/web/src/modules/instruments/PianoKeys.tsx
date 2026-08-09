@@ -1,4 +1,6 @@
 import { midiToPitchClass } from "@/modules/chords/notes";
+import type { MelodyTrace } from "@/modules/melody/trace";
+import { traceOpacity } from "@/modules/melody/trace";
 import { cn } from "@/lib/utils";
 
 interface PianoKeysProps {
@@ -7,6 +9,7 @@ interface PianoKeysProps {
   /** Pitch classes to highlight (the scale). */
   highlight?: Set<number>;
   rootPc?: number;
+  trace?: MelodyTrace;
   onPlay?: (midi: number) => void;
   className?: string;
 }
@@ -14,7 +17,7 @@ interface PianoKeysProps {
 const BLACK = new Set([1, 3, 6, 8, 10]);
 
 /** An SVG piano keyboard with scale highlighting; keys are clickable. */
-export function PianoKeys({ low, high, highlight, rootPc, onPlay, className }: PianoKeysProps) {
+export function PianoKeys({ low, high, highlight, rootPc, trace, onPlay, className }: PianoKeysProps) {
   const whites: number[] = [];
   for (let m = low; m <= high; m++) {
     if (!BLACK.has(((m % 12) + 12) % 12)) whites.push(m);
@@ -99,6 +102,25 @@ export function PianoKeys({ low, high, highlight, rootPc, onPlay, className }: P
             )}
           </g>
         ))}
+      {/* melody trace markers */}
+      {trace &&
+        [...trace.order.entries()].map(([m, ti]) => {
+          if (m < low || m > high) return null;
+          const black = BLACK.has(pcOf(m));
+          const x = black
+            ? (whiteX.get(m - 1) ?? 0) + WW - 1
+            : (whiteX.get(m) ?? 0) + (WW - 1) / 2;
+          if (black ? !whiteX.has(m - 1) : !whiteX.has(m)) return null;
+          const y = black ? 14 : WH - 26;
+          return (
+            <g key={`tr${m}`} opacity={traceOpacity(ti, trace.size)} pointerEvents="none">
+              <circle cx={x} cy={y} r={7.5} className="fill-foreground" />
+              <text x={x} y={y + 3} textAnchor="middle" className="fill-background text-[9px] font-bold">
+                {ti + 1}
+              </text>
+            </g>
+          );
+        })}
     </svg>
   );
 }

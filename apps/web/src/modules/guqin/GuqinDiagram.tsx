@@ -1,5 +1,7 @@
 import { useMemo } from "react";
 import { midiToNote } from "@/modules/chords/notes";
+import type { MelodyTrace } from "@/modules/melody/trace";
+import { traceOpacity } from "@/modules/melody/trace";
 import { allPositions, huiX } from "./guqin";
 import { cn } from "@/lib/utils";
 
@@ -7,6 +9,7 @@ interface GuqinDiagramProps {
   /** Pitch classes of the current scale. */
   highlight?: Set<number>;
   rootPc?: number;
+  trace?: MelodyTrace;
   onPlay?: (midi: number) => void;
   className?: string;
 }
@@ -19,7 +22,7 @@ interface GuqinDiagramProps {
  * current scale live: on the string at a hui (stopped/harmonic node) or
  * at the yueshan for open strings. Everything is clickable.
  */
-export function GuqinDiagram({ highlight, rootPc, onPlay, className }: GuqinDiagramProps) {
+export function GuqinDiagram({ highlight, rootPc, trace, onPlay, className }: GuqinDiagramProps) {
   const W = 720;
   const H = 220;
   const LEFT = 46; // dragon gums side
@@ -103,6 +106,18 @@ export function GuqinDiagram({ highlight, rootPc, onPlay, className }: GuqinDiag
             ) : (
               <circle cx={x} cy={y} r={5.5} className={root ? "fill-primary" : "fill-jade"} />
             )}
+            {(() => {
+              const ti = trace?.order.get(p.midi);
+              if (ti === undefined || !trace) return null;
+              return (
+                <g opacity={traceOpacity(ti, trace.size)} pointerEvents="none">
+                  <circle cx={x} cy={y - 11} r={6.5} className="fill-foreground" />
+                  <text x={x} y={y - 8.2} textAnchor="middle" className="fill-background text-[8px] font-bold">
+                    {ti + 1}
+                  </text>
+                </g>
+              );
+            })()}
           </g>
         );
       })}
