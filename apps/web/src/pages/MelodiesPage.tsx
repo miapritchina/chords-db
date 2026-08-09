@@ -19,6 +19,9 @@ import { MELODIC_INSTRUMENTS, instrumentById } from "@/modules/instruments/regis
 import { WIND_CHARTS } from "@/modules/winds/fingerings";
 import { WindFingeringChart } from "@/modules/winds/WindFingeringChart";
 import { GuqinDiagram } from "@/modules/guqin/GuqinDiagram";
+import { FretboardDiagram } from "@/modules/instruments/FretboardDiagram";
+import { HarpStrings } from "@/modules/instruments/HarpStrings";
+import { melodyTrace } from "@/modules/melody/trace";
 import {
   cellsToEvents,
   melodyDurationSec,
@@ -55,6 +58,9 @@ export function MelodiesPage() {
   const scale = scaleById(scaleId);
   const voice = instrument.voice ?? "pluck";
   const pcs = useMemo(() => new Set(scalePitchClasses(rootPc, scale)), [rootPc, scale]);
+  // Finger-path overlay: melody notes numbered on the instrument, fading
+  // along the sequence so hand movement is visible at a glance.
+  const trace = useMemo(() => (cells.length > 0 ? melodyTrace(cells) : undefined), [cells]);
 
   const rows = useMemo(() => {
     const [low, high] = instrument.range ?? [60, 84];
@@ -194,6 +200,7 @@ export function MelodiesPage() {
               high={84}
               highlight={pcs}
               rootPc={rootPc}
+              trace={trace}
               onPlay={(m) => playNote(m, 0.8, voice)}
               className="mx-auto max-w-2xl"
             />
@@ -202,6 +209,7 @@ export function MelodiesPage() {
             <KalimbaTines
               highlight={pcs}
               rootPc={rootPc}
+              trace={trace}
               onPlay={(m) => playNote(m, 0.9, voice)}
               className="mx-auto max-w-xl"
             />
@@ -211,6 +219,7 @@ export function MelodiesPage() {
               chart={WIND_CHARTS[instrument.id]}
               highlight={pcs}
               rootPc={rootPc}
+              trace={trace}
               onPlay={(m) => playNote(m, 0.9, voice)}
             />
           )}
@@ -218,7 +227,30 @@ export function MelodiesPage() {
             <GuqinDiagram
               highlight={pcs}
               rootPc={rootPc}
+              trace={trace}
               onPlay={(m) => playNote(m, 1.4, voice)}
+              className="mx-auto w-full max-w-3xl"
+            />
+          )}
+          {instrument.layout === "fretboard" && instrument.tuning && (
+            <FretboardDiagram
+              tuning={instrument.tuning}
+              fretless={instrument.fretless}
+              highlight={pcs}
+              rootPc={rootPc}
+              trace={trace}
+              onPlay={(m) => playNote(m, 0.9, voice)}
+              className="mx-auto w-full max-w-3xl"
+            />
+          )}
+          {instrument.layout === "harp" && (
+            <HarpStrings
+              low={instrument.harp?.low}
+              strings={instrument.harp?.strings}
+              highlight={pcs}
+              rootPc={rootPc}
+              trace={trace}
+              onPlay={(m) => playNote(m, 1.2, voice)}
               className="mx-auto w-full max-w-3xl"
             />
           )}

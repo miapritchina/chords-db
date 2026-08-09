@@ -1,4 +1,6 @@
 import { midiToNote } from "@/modules/chords/notes";
+import type { MelodyTrace } from "@/modules/melody/trace";
+import { traceOpacity } from "@/modules/melody/trace";
 import type { Fingering, HoleState, WindChart } from "./fingerings";
 import { cn } from "@/lib/utils";
 
@@ -7,6 +9,7 @@ interface WindFingeringChartProps {
   /** Pitch classes of the current scale — other notes are dimmed. */
   highlight?: Set<number>;
   rootPc?: number;
+  trace?: MelodyTrace;
   onPlay?: (midi: number) => void;
   className?: string;
 }
@@ -20,6 +23,7 @@ export function WindFingeringChart({
   chart,
   highlight,
   rootPc,
+  trace,
   onPlay,
   className,
 }: WindFingeringChartProps) {
@@ -95,6 +99,18 @@ export function WindFingeringChart({
                 {midiToNote(f.midi)}
                 {f.overblow && <sup className="text-[9px] text-jade">²</sup>}
               </span>
+              {(() => {
+                const ti = trace?.order.get(f.midi);
+                if (ti === undefined || !trace) return <span className="h-4" />;
+                return (
+                  <span
+                    className="flex h-4 w-4 items-center justify-center rounded-full bg-foreground text-[9px] font-bold text-background"
+                    style={{ opacity: traceOpacity(ti, trace.size) }}
+                  >
+                    {ti + 1}
+                  </span>
+                );
+              })()}
             </button>
           );
         })}

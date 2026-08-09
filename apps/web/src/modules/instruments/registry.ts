@@ -1,6 +1,13 @@
 import type { ChordInstrumentId } from "@/modules/chords/types";
 
-export type MelodicLayout = "piano" | "kalimba" | "ribbon" | "wind" | "guqin";
+export type MelodicLayout =
+  | "piano"
+  | "kalimba"
+  | "ribbon"
+  | "wind"
+  | "guqin"
+  | "fretboard"
+  | "harp";
 export type Voice = "pluck" | "breath" | "bow";
 
 export interface Instrument {
@@ -14,6 +21,12 @@ export interface Instrument {
   range?: [number, number];
   /** Which visualizer the Melodies page uses. */
   layout?: MelodicLayout;
+  /** Low-to-high open strings for fretboard layouts. */
+  tuning?: string[];
+  /** True for fretless fingerboards (violin) — positions drawn as guides. */
+  fretless?: boolean;
+  /** Harp layouts: lowest string + string count. */
+  harp?: { low: string; strings: number };
   /** Synth voice used for playback. */
   voice?: Voice;
   notes?: string;
@@ -35,9 +48,11 @@ export const INSTRUMENTS: Instrument[] = [
     name: "Harp",
     family: "strings",
     emoji: "🪕",
-    range: [48, 84],
-    layout: "ribbon",
+    range: [48, 91], // harpsicle: 26 diatonic strings from C3
+    layout: "harp",
+    harp: { low: "C3", strings: 26 },
     voice: "pluck",
+    notes: "harpsicle · 26 strings from C3",
   },
   {
     id: "violin",
@@ -45,7 +60,9 @@ export const INSTRUMENTS: Instrument[] = [
     family: "strings",
     emoji: "🎻",
     range: [55, 88], // G3 up; goes far higher in position work
-    layout: "ribbon",
+    layout: "fretboard",
+    tuning: ["G3", "D4", "A4", "E5"],
+    fretless: true,
     voice: "bow",
   },
   {
@@ -55,7 +72,8 @@ export const INSTRUMENTS: Instrument[] = [
     emoji: "🎸",
     chordDb: "baritone-ukulele",
     range: [50, 76],
-    layout: "ribbon",
+    layout: "fretboard",
+    tuning: ["D3", "G3", "B3", "E4"],
     voice: "pluck",
     notes: "DGBE — voicings derived from the guitar database",
   },
@@ -126,7 +144,8 @@ export const INSTRUMENTS: Instrument[] = [
     emoji: "🎸",
     chordDb: "guitar",
     range: [40, 76],
-    layout: "ribbon",
+    layout: "fretboard",
+    tuning: ["E2", "A2", "D3", "G3", "B3", "E4"],
     voice: "pluck",
     notes: "full chords-db voicing library",
   },
@@ -137,7 +156,8 @@ export const INSTRUMENTS: Instrument[] = [
     emoji: "🌺",
     chordDb: "ukulele",
     range: [60, 81],
-    layout: "ribbon",
+    layout: "fretboard",
+    tuning: ["G4", "C4", "E4", "A4"],
     voice: "pluck",
     notes: "GCEA (re-entrant)",
   },
