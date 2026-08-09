@@ -53,5 +53,10 @@
     "presets": [
       "@babel/preset-env"
     ]
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
   }
 }

@@ -1,0 +1,103 @@
+import { midiToNote } from "@/modules/chords/notes";
+import type { WindChart } from "./fingerings";
+import { cn } from "@/lib/utils";
+
+interface WindFingeringChartProps {
+  chart: WindChart;
+  /** Pitch classes of the current scale — other notes are dimmed. */
+  highlight?: Set<number>;
+  rootPc?: number;
+  onPlay?: (midi: number) => void;
+  className?: string;
+}
+
+/**
+ * One column per note: the instrument's holes from mouthpiece down,
+ * ● covered · ◐ half · ○ open. Thumb holes sit offset to the left.
+ * Overblown notes carry a ² badge (same fingering, second register).
+ */
+export function WindFingeringChart({
+  chart,
+  highlight,
+  rootPc,
+  onPlay,
+  className,
+}: WindFingeringChartProps) {
+  const pcOf = (m: number) => ((m % 12) + 12) % 12;
+
+  return (
+    <div className={cn("overflow-x-auto", className)}>
+      <div className="flex items-end gap-1 pb-1">
+        {/* hole labels gutter */}
+        <div className="mr-1 flex shrink-0 flex-col items-end gap-1.5 pb-7">
+          {chart.holeLabels.map((label, i) => (
+            <span
+              key={i}
+              className="flex h-4 items-center text-[10px] text-muted-foreground"
+            >
+              {label}
+            </span>
+          ))}
+        </div>
+
+        {chart.fingerings.map((f) => {
+          const inScale = highlight?.has(pcOf(f.midi)) ?? true;
+          const isRoot = rootPc !== undefined && pcOf(f.midi) === rootPc;
+          return (
+            <button
+              key={`${f.midi}${f.overblow ? "o" : ""}`}
+              onClick={() => onPlay?.(f.midi)}
+              disabled={!onPlay}
+              title={`${midiToNote(f.midi)}${f.overblow ? " (overblown)" : ""}`}
+              className={cn(
+                "flex shrink-0 flex-col items-center gap-1.5 rounded-lg border px-1.5 pb-1.5 pt-2 transition-colors",
+                isRoot
+                  ? "border-primary bg-primary/10"
+                  : inScale
+                    ? "bg-card hover:bg-accent"
+                    : "opacity-30 hover:opacity-60",
+              )}
+            >
+              {chart.holeLabels.map((_, i) => {
+                const state = f.holes[i];
+                const thumb = chart.thumbs.includes(i);
+                return (
+                  <span
+                    key={i}
+                    className={cn(
+                      "relative block h-4 w-4 rounded-full border-[1.5px]",
+                      thumb ? "-translate-x-1 border-dashed" : "",
+                      state === 1
+                        ? "border-foreground bg-foreground"
+                        : "border-foreground bg-transparent",
+                    )}
+                  >
+                    {state === 0.5 && (
+                      <span className="absolute inset-0 overflow-hidden rounded-full">
+                        <span className="absolute inset-y-0 left-0 w-1/2 bg-foreground" />
+                      </span>
+                    )}
+                  </span>
+                );
+              })}
+              <span
+                className={cn(
+                  "mt-0.5 font-display text-xs",
+                  isRoot ? "font-semibold text-primary" : "text-foreground",
+                )}
+              >
+                {midiToNote(f.midi)}
+                {f.overblow && <sup className="text-[9px] text-jade">²</sup>}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+      {chart.note && (
+        <p className="mt-1 text-xs text-muted-foreground">
+          {chart.title} — {chart.note}
+        </p>
+      )}
+    </div>
+  );
+}
