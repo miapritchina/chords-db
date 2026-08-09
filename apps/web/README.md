@@ -20,6 +20,15 @@ pnpm --filter @practice/web test         # vitest
   four guitar strings, so every guitar shape with muted low strings is
   playable). Click *hear* to play a voicing through the Web Audio synth,
   *add* to sketch a progression, then name and save it.
+- **Melodies** — scale-based fun for the non-chordal instruments. Pick any
+  of your instruments, a root, and a scale (western modes, pentatonics/blues,
+  and the five Chinese modes — gong 宫, shang 商, jue 角, zhi 徵, yu 羽).
+  The instrument draws itself: an SVG piano keyboard, a 17-key kalimba tine
+  diagram, or a note ribbon sized to the instrument's real range (dizi, xiao,
+  ocarina, violin, harp, guqin…). A 16-step melody sketcher constrained to
+  the scale lets you draw, play (per-family synth voices: plucked / breath /
+  bowed), *spark* a random melody, and save. Everything is clickable and
+  audible.
 - **Progressions** — saved sketches; click any chord to hear it, *play* for
   the whole sequence.
 - **Practice** — session tracker (streak, weekly minutes, per-instrument
@@ -34,8 +43,11 @@ Everything is deliberately modular so it can be reorganized freely:
 ```
 src/modules/
   chords/        types, note math, db loading + baritone derivation, ChordDiagram (SVG)
-  instruments/   your instrument registry — edit INSTRUMENTS freely
-  audio/         tiny Web Audio synth (swap for a sampler later)
+  scales/        scale definitions (incl. Chinese modes) + range math (tested)
+  melody/        melody grid model, spark generator (tested)
+  instruments/   your instrument registry (ranges, layouts, voices), PianoKeys,
+                 KalimbaTines, kalimba tine geometry (tested)
+  audio/         tiny Web Audio synth with pluck/breath/bow voices
   midi/          useMidi hook (Web MIDI input)
   storage/       StorageAdapter interface + local & Supabase adapters
   progressions/  progression types

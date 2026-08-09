@@ -1,13 +1,15 @@
 import { NavLink, Navigate, Route, Routes } from "react-router-dom";
-import { CalendarCheck, Compass, ListMusic, Radio } from "lucide-react";
+import { CalendarCheck, Compass, ListMusic, Music4, Radio } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ExplorePage } from "@/pages/ExplorePage";
+import { MelodiesPage } from "@/pages/MelodiesPage";
 import { ProgressionsPage } from "@/pages/ProgressionsPage";
 import { PracticePage } from "@/pages/PracticePage";
 import { TrainersPage } from "@/pages/TrainersPage";
 
 const NAV = [
   { to: "/explore", label: "Explore", icon: Compass },
+  { to: "/melodies", label: "Melodies", icon: Music4 },
   { to: "/progressions", label: "Progressions", icon: ListMusic },
   { to: "/practice", label: "Practice", icon: CalendarCheck },
   { to: "/trainers", label: "Trainers", icon: Radio },
@@ -50,6 +52,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Navigate to="/explore" replace />} />
           <Route path="/explore" element={<ExplorePage />} />
+          <Route path="/melodies" element={<MelodiesPage />} />
           <Route path="/progressions" element={<ProgressionsPage />} />
           <Route path="/practice" element={<PracticePage />} />
           <Route path="/trainers" element={<TrainersPage />} />
