@@ -1,6 +1,6 @@
 import { midiToNote, midiToPitchClass, noteToMidi } from "@/modules/chords/notes";
 import type { MelodyTrace } from "@/modules/melody/trace";
-import { traceOpacity } from "@/modules/melody/trace";
+import { TraceBadge, TracePath } from "@/modules/melody/TraceBadge";
 import { pitchClassName } from "@/modules/scales/scales";
 import { cn } from "@/lib/utils";
 
@@ -76,7 +76,7 @@ export function HarpStrings({
           const y0 = TOP + MAXH - len;
           const inScale = highlight?.has(pc) ?? true;
           const root = rootPc !== undefined && pc === rootPc;
-          const ti = trace?.order.get(m);
+          const indices = trace?.order.get(m);
           const colour =
             pc === 0 ? "stroke-primary" : pc === 5 ? "stroke-[oklch(0.55_0.13_255)]" : "stroke-foreground/65";
           return (
@@ -115,17 +115,24 @@ export function HarpStrings({
                   {midiToNote(m)}
                 </text>
               )}
-              {ti !== undefined && trace && (
-                <g opacity={traceOpacity(ti, trace.size)}>
-                  <circle cx={x} cy={y0 + 12} r={7} className="fill-foreground" />
-                  <text x={x} y={y0 + 15} textAnchor="middle" className="fill-background text-[8px] font-bold">
-                    {ti + 1}
-                  </text>
-                </g>
+              {indices && trace && (
+                <TraceBadge x={x} y={y0 + 12} indices={indices} trace={trace} />
               )}
             </g>
           );
         })}
+        {/* hand-travel path between consecutive steps */}
+        {trace && (
+          <TracePath
+            trace={trace}
+            pointFor={(m) => {
+              const i = notes.indexOf(m);
+              if (i === -1) return null;
+              const len = MAXH - (i * (MAXH - MINH)) / (strings - 1);
+              return { x: 18 + i * SW, y: TOP + MAXH - len + 12 };
+            }}
+          />
+        )}
       </svg>
       <p className="mt-1 text-xs text-muted-foreground">
         {strings} strings from {low} · C strings red, F strings blue
