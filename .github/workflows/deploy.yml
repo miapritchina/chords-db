@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  pages: write
 
 concurrency:
   group: pages
@@ -37,3 +38,15 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: apps/web/dist
+      # Ensure the Pages site serves the gh-pages branch, not master's README.
+      # (Updating an existing Pages site only needs pages:write; harmless no-op
+      # if it is already correct, warning only if the token can't do it.)
+      - name: Point Pages at gh-pages branch
+        run: |
+          curl -sS -X PUT \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/${{ github.repository }}/pages \
+            -d '{"source":{"branch":"gh-pages","path":"/"}}' \
+            -o /tmp/pages.json -w "HTTP %{http_code}\n" || true
+          cat /tmp/pages.json || true
