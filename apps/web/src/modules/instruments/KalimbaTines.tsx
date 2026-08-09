@@ -1,7 +1,7 @@
 import { kalimbaTines } from "./kalimba";
 import { midiToNote, midiToPitchClass } from "@/modules/chords/notes";
 import type { MelodyTrace } from "@/modules/melody/trace";
-import { traceOpacity } from "@/modules/melody/trace";
+import { TraceBadge, TracePath } from "@/modules/melody/TraceBadge";
 import { cn } from "@/lib/utils";
 
 interface KalimbaTinesProps {
@@ -85,25 +85,25 @@ export function KalimbaTines({ highlight, rootPc, trace, onPlay, className }: Ka
               {midiToNote(t.midi)}
             </text>
             {(() => {
-              const ti = trace?.order.get(t.midi);
-              if (ti === undefined || !trace) return null;
-              return (
-                <g opacity={traceOpacity(ti, trace.size)} pointerEvents="none">
-                  <circle cx={x + TW / 2} cy={30 + h / 2} r={8} className="fill-foreground" />
-                  <text
-                    x={x + TW / 2}
-                    y={30 + h / 2 + 3}
-                    textAnchor="middle"
-                    className="fill-background text-[9px] font-bold"
-                  >
-                    {ti + 1}
-                  </text>
-                </g>
-              );
+              const indices = trace?.order.get(t.midi);
+              if (!indices || !trace) return null;
+              return <TraceBadge x={x + TW / 2} y={30 + h / 2} indices={indices} trace={trace} />;
             })()}
           </g>
         );
       })}
+      {/* hand-travel path — the kalimba zigzag between thumbs */}
+      {trace && (
+        <TracePath
+          trace={trace}
+          pointFor={(m) => {
+            const t = tines.find((tt) => tt.midi === m);
+            if (!t) return null;
+            const h = MAXH - t.distance * 12;
+            return { x: t.slot * (TW + GAP) + GAP / 2 + TW / 2, y: 30 + h / 2 };
+          }}
+        />
+      )}
     </svg>
   );
 }

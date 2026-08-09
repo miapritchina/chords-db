@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { midiToNote } from "@/modules/chords/notes";
 import type { MelodyTrace } from "@/modules/melody/trace";
-import { traceOpacity } from "@/modules/melody/trace";
+import { TraceBadge } from "@/modules/melody/TraceBadge";
 import { allPositions, huiX } from "./guqin";
 import { cn } from "@/lib/utils";
 
@@ -107,16 +107,9 @@ export function GuqinDiagram({ highlight, rootPc, trace, onPlay, className }: Gu
               <circle cx={x} cy={y} r={5.5} className={root ? "fill-primary" : "fill-jade"} />
             )}
             {(() => {
-              const ti = trace?.order.get(p.midi);
-              if (ti === undefined || !trace) return null;
-              return (
-                <g opacity={traceOpacity(ti, trace.size)} pointerEvents="none">
-                  <circle cx={x} cy={y - 11} r={6.5} className="fill-foreground" />
-                  <text x={x} y={y - 8.2} textAnchor="middle" className="fill-background text-[8px] font-bold">
-                    {ti + 1}
-                  </text>
-                </g>
-              );
+              const indices = trace?.order.get(p.midi);
+              if (!indices || !trace) return null;
+              return <TraceBadge x={x} y={y - 11} indices={indices} trace={trace} />;
             })()}
           </g>
         );

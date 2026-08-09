@@ -1,6 +1,6 @@
 import { midiToPitchClass, noteToMidi } from "@/modules/chords/notes";
 import type { MelodyTrace } from "@/modules/melody/trace";
-import { traceOpacity } from "@/modules/melody/trace";
+import { TraceBadge } from "@/modules/melody/TraceBadge";
 import { cn } from "@/lib/utils";
 
 interface FretboardDiagramProps {
@@ -97,7 +97,7 @@ export function FretboardDiagram({
           const midi = om + f;
           if (!(highlight?.has(pcOf(midi)) ?? true)) return null;
           const root = rootPc !== undefined && pcOf(midi) === rootPc;
-          const ti = trace?.order.get(midi);
+          const indices = trace?.order.get(midi);
           return (
             <g key={`${s}-${f}`} onClick={() => onPlay?.(midi)} className={onPlay ? "cursor-pointer" : ""}>
               <title>{midiToPitchClass(midi)} · string {s + 1}, {f === 0 ? "open" : `fret ${f}`}</title>
@@ -126,13 +126,8 @@ export function FretboardDiagram({
                   {midiToPitchClass(midi)}
                 </text>
               )}
-              {ti !== undefined && trace && (
-                <g opacity={traceOpacity(ti, trace.size)}>
-                  <circle cx={fx(f) + 8} cy={fy(s) - 9} r={6.5} className="fill-foreground" />
-                  <text x={fx(f) + 8} y={fy(s) - 6.2} textAnchor="middle" className="fill-background text-[8px] font-bold">
-                    {ti + 1}
-                  </text>
-                </g>
+              {indices && trace && (
+                <TraceBadge x={fx(f) + 9} y={fy(s) - 9} indices={indices} trace={trace} />
               )}
             </g>
           );

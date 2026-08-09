@@ -1,6 +1,6 @@
 import { midiToPitchClass } from "@/modules/chords/notes";
 import type { MelodyTrace } from "@/modules/melody/trace";
-import { traceOpacity } from "@/modules/melody/trace";
+import { TraceBadge, TracePath } from "@/modules/melody/TraceBadge";
 import { cn } from "@/lib/utils";
 
 interface PianoKeysProps {
@@ -102,24 +102,31 @@ export function PianoKeys({ low, high, highlight, rootPc, trace, onPlay, classNa
             )}
           </g>
         ))}
-      {/* melody trace markers */}
+      {/* melody trace: hand-travel path + numbered step markers */}
+      {trace && (
+        <TracePath
+          trace={trace}
+          pointFor={(m) => {
+            if (m < low || m > high) return null;
+            const black = BLACK.has(pcOf(m));
+            if (black ? !whiteX.has(m - 1) : !whiteX.has(m)) return null;
+            const x = black
+              ? (whiteX.get(m - 1) ?? 0) + WW - 1
+              : (whiteX.get(m) ?? 0) + (WW - 1) / 2;
+            return { x, y: black ? 14 : WH - 26 };
+          }}
+        />
+      )}
       {trace &&
-        [...trace.order.entries()].map(([m, ti]) => {
+        [...trace.order.entries()].map(([m, indices]) => {
           if (m < low || m > high) return null;
           const black = BLACK.has(pcOf(m));
+          if (black ? !whiteX.has(m - 1) : !whiteX.has(m)) return null;
           const x = black
             ? (whiteX.get(m - 1) ?? 0) + WW - 1
             : (whiteX.get(m) ?? 0) + (WW - 1) / 2;
-          if (black ? !whiteX.has(m - 1) : !whiteX.has(m)) return null;
           const y = black ? 14 : WH - 26;
-          return (
-            <g key={`tr${m}`} opacity={traceOpacity(ti, trace.size)} pointerEvents="none">
-              <circle cx={x} cy={y} r={7.5} className="fill-foreground" />
-              <text x={x} y={y + 3} textAnchor="middle" className="fill-background text-[9px] font-bold">
-                {ti + 1}
-              </text>
-            </g>
-          );
+          return <TraceBadge key={`tr${m}`} x={x} y={y} indices={indices} trace={trace} />;
         })}
     </svg>
   );
