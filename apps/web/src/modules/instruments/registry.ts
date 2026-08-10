@@ -17,6 +17,11 @@ export interface Instrument {
   emoji: string;
   /** Set when the instrument has a fretted chord database in chords-db. */
   chordDb?: ChordInstrumentId;
+  /**
+   * False for reference-only entries (chord databases worth browsing that
+   * the player doesn't actually play). Hidden from practice/melody pickers.
+   */
+  played?: boolean;
   /** Practical melodic range as [low, high] midi (approximate for winds). */
   range?: [number, number];
   /** Which visualizer the Melodies page uses. */
@@ -147,7 +152,8 @@ export const INSTRUMENTS: Instrument[] = [
     layout: "fretboard",
     tuning: ["E2", "A2", "D3", "G3", "B3", "E4"],
     voice: "pluck",
-    notes: "full chords-db voicing library",
+    played: false,
+    notes: "reference — source db for the baritone voicings",
   },
   {
     id: "ukulele",
@@ -159,12 +165,14 @@ export const INSTRUMENTS: Instrument[] = [
     layout: "fretboard",
     tuning: ["G4", "C4", "E4", "A4"],
     voice: "pluck",
-    notes: "GCEA (re-entrant)",
+    played: false,
+    notes: "reference · GCEA (re-entrant)",
   },
 ];
 
 export const instrumentById = (id: string) =>
   INSTRUMENTS.find((i) => i.id === id);
 
+export const PLAYED_INSTRUMENTS = INSTRUMENTS.filter((i) => i.played !== false);
 export const CHORD_INSTRUMENTS = INSTRUMENTS.filter((i) => i.chordDb);
-export const MELODIC_INSTRUMENTS = INSTRUMENTS.filter((i) => i.range);
+export const MELODIC_INSTRUMENTS = PLAYED_INSTRUMENTS.filter((i) => i.range);

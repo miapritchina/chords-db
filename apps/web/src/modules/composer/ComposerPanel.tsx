@@ -15,6 +15,7 @@ import {
 } from "@/modules/theory/harmony";
 import { newId, useCollection } from "@/modules/storage";
 import type { Progression } from "@/modules/progressions/types";
+import { pickProgressionInstrument } from "@/modules/progressions/pick";
 import { cn } from "@/lib/utils";
 
 interface ComposerPanelProps {
@@ -113,11 +114,17 @@ export function ComposerPanel({
   const saveProgression = () => {
     const chords = chosenChords.filter(Boolean) as ChordSuggestion[];
     if (chords.length === 0) return;
+    const steps = chords.map((c) => ({
+      key: pitchClassName(c.chord.rootPc),
+      suffix: c.chord.dbSuffix,
+      position: 0,
+    }));
+    const { instrument } = pickProgressionInstrument(steps);
     progressions.put({
       id: newId(),
       name: `${pitchClassName(rootPc)} ${scale.name} harmony`,
-      instrument: "guitar",
-      steps: chords.map((c) => ({ key: pitchClassName(c.chord.rootPc), suffix: c.chord.dbSuffix, position: 0 })),
+      instrument,
+      steps,
       createdAt: new Date().toISOString(),
     });
     setSaved(true);

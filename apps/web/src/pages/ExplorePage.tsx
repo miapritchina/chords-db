@@ -82,6 +82,7 @@ export function ExplorePage() {
             {CHORD_INSTRUMENTS.map((i) => (
               <SelectItem key={i.id} value={i.chordDb!}>
                 {i.emoji} {i.name}
+                {i.played === false ? " (reference)" : ""}
               </SelectItem>
             ))}
           </SelectContent>
