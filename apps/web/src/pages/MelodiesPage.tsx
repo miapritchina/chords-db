@@ -22,6 +22,7 @@ import { GuqinDiagram } from "@/modules/guqin/GuqinDiagram";
 import { FretboardDiagram } from "@/modules/instruments/FretboardDiagram";
 import { HarpStrings } from "@/modules/instruments/HarpStrings";
 import { melodyTrace } from "@/modules/melody/trace";
+import { ComposerPanel } from "@/modules/composer/ComposerPanel";
 import {
   cellsToEvents,
   melodyDurationSec,
@@ -361,6 +362,21 @@ export function MelodiesPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* composition assistant */}
+      <ComposerPanel
+        cells={cells}
+        scaleNotes={[...rows].reverse()}
+        rootPc={rootPc}
+        scale={scale}
+        bpm={bpm}
+        steps={STEPS}
+        voice={voice}
+        onAppend={(midi, step) => {
+          setCells((prev) => [...prev, { step, midi }]);
+          playNote(midi, 0.5, voice);
+        }}
+      />
 
       {/* saved melodies */}
       {melodies.items.length > 0 && (
