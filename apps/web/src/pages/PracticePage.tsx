@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { INSTRUMENTS, instrumentById } from "@/modules/instruments/registry";
+import { PLAYED_INSTRUMENTS, instrumentById } from "@/modules/instruments/registry";
 import { StatTile } from "@/modules/practice/StatTile";
 import { currentStreak, dailyMinutes, minutesByInstrument } from "@/modules/practice/stats";
 import type { FocusArea, PlanBlock, PracticeSession } from "@/modules/practice/types";
@@ -132,7 +132,7 @@ function TrackerTab() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {INSTRUMENTS.map((i) => (
+                  {PLAYED_INSTRUMENTS.map((i) => (
                     <SelectItem key={i.id} value={i.id}>
                       {i.emoji} {i.name}
                     </SelectItem>
@@ -293,7 +293,7 @@ function PlannerTab() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {INSTRUMENTS.map((i) => (
+                {PLAYED_INSTRUMENTS.map((i) => (
                   <SelectItem key={i.id} value={i.id}>
                     {i.emoji} {i.name}
                   </SelectItem>
