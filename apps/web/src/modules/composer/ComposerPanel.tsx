@@ -27,6 +27,9 @@ interface ComposerPanelProps {
   bpm: number;
   steps: number;
   voice: Voice;
+  /** Harmony option index per segment — owned by the caller so it persists. */
+  chosen: number[];
+  onChosenChange: (next: number[]) => void;
   onAppend: (midi: number, step: number) => void;
 }
 
@@ -54,10 +57,11 @@ export function ComposerPanel({
   bpm,
   steps,
   voice,
+  chosen,
+  onChosenChange,
   onAppend,
 }: ComposerPanelProps) {
   const progressions = useCollection<Progression>("progressions");
-  const [chosen, setChosen] = useState<number[]>(Array(SEGMENTS).fill(0));
   const [saved, setSaved] = useState(false);
 
   const path = useMemo(
@@ -87,11 +91,12 @@ export function ComposerPanel({
   );
 
   useEffect(() => {
-    setChosen(Array(SEGMENTS).fill(0));
     setSaved(false);
-  }, [cells, rootPc, scale.id]);
+  }, [cells, chosen, rootPc, scale.id]);
 
-  const chosenChords = harmony.map((options, s) => options[Math.min(chosen[s], options.length - 1)]);
+  const chosenChords = harmony.map((options, s) =>
+    options[Math.min(chosen[s] ?? 0, options.length - 1)],
+  );
   const hasHarmony = harmony.some((h) => h.length > 0);
 
   const playWithHarmony = () => {
@@ -182,12 +187,12 @@ export function ComposerPanel({
                       steps {s * (steps / SEGMENTS) + 1}–{(s + 1) * (steps / SEGMENTS)}
                     </p>
                     {options.map((opt, i) => {
-                      const active = chosen[s] === i;
+                      const active = (chosen[s] ?? 0) === i;
                       return (
                         <button
                           key={opt.chord.name + i}
                           onClick={() => {
-                            setChosen((c) => c.map((v, j) => (j === s ? i : v)));
+                            onChosenChange(chosen.map((v, j) => (j === s ? i : v)));
                             playMidiNotes(chordMidi(opt.chord), { duration: 1.2, gain: 0.14 });
                           }}
                           className={cn(
