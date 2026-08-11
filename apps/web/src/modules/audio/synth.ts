@@ -11,11 +11,75 @@ import { midiToFrequency } from "@/modules/chords/notes";
 export type Voice = "pluck" | "breath" | "bow";
 
 let ctx: AudioContext | null = null;
+let mediaUnlocked = false;
+
+/** A few samples of silence as a WAV — used to claim the media channel. */
+const SILENCE =
+  "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQQAAACAgICA";
 
 function audioContext(): AudioContext {
-  if (!ctx) ctx = new AudioContext();
-  if (ctx.state === "suspended") void ctx.resume();
+  if (!ctx) {
+    const Ctor =
+      window.AudioContext ??
+      (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    ctx = new Ctor!();
+    // iOS suspends (or "interrupts") the context on tab switches and lock;
+    // revive it on the next visibility change or touch.
+    const revive = () => {
+      if (ctx && ctx.state !== "running") void ctx.resume();
+    };
+    document.addEventListener("visibilitychange", revive);
+    document.addEventListener("touchend", revive, { passive: true });
+  }
+  if (ctx.state !== "running") void ctx.resume();
+  unlockIosAudio(ctx);
   return ctx;
+}
+
+/**
+ * iOS routes Web Audio through the ringer channel by default, so the
+ * hardware mute switch silences it. Claim the "playback" media category —
+ * via the audio-session API where available (iOS 17+), plus a looping
+ * silent <audio> element for older Safari. Must run inside a user gesture,
+ * which holds because audioContext() is only called from click handlers.
+ */
+function unlockIosAudio(ac: AudioContext): void {
+  if (mediaUnlocked) return;
+  mediaUnlocked = true;
+
+  try {
+    (navigator as unknown as { audioSession?: { type: string } }).audioSession!.type = "playback";
+  } catch {
+    /* pre-iOS-17 Safari or non-iOS — the <audio> fallback below covers it */
+  }
+
+  // kick the context with a one-sample buffer inside the gesture
+  try {
+    const buffer = ac.createBuffer(1, 1, 22050);
+    const source = ac.createBufferSource();
+    source.buffer = buffer;
+    source.connect(ac.destination);
+    source.start(0);
+  } catch {
+    /* ignore */
+  }
+
+  try {
+    const el = new Audio(SILENCE);
+    el.loop = true;
+    const attempt = el.play();
+    if (attempt) {
+      attempt.catch(() => {
+        mediaUnlocked = false; // retry on the next gesture
+      });
+    }
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) el.pause();
+      else void el.play().catch(() => {});
+    });
+  } catch {
+    mediaUnlocked = false;
+  }
 }
 
 export interface PlayOptions {
@@ -26,16 +90,24 @@ export interface PlayOptions {
   voice?: Voice;
 }
 
+/** Run once the context clock is actually advancing (iOS resumes async). */
+function whenRunning(ac: AudioContext, fn: () => void): void {
+  if (ac.state === "running") fn();
+  else void ac.resume().then(fn, fn);
+}
+
 export function playMidiNotes(midi: number[], opts: PlayOptions = {}): void {
   const { strum = 0.045, duration = 1.6, gain = 0.16, voice = "pluck" } = opts;
   const ac = audioContext();
-  const now = ac.currentTime + 0.02;
-  midi.forEach((note, i) => playVoice(ac, voice, note, now + i * strum, duration, gain));
+  whenRunning(ac, () => {
+    const now = ac.currentTime + 0.02;
+    midi.forEach((note, i) => playVoice(ac, voice, note, now + i * strum, duration, gain));
+  });
 }
 
 export function playNote(midi: number, duration = 1.0, voice: Voice = "pluck"): void {
   const ac = audioContext();
-  playVoice(ac, voice, midi, ac.currentTime + 0.02, duration, 0.2);
+  whenRunning(ac, () => playVoice(ac, voice, midi, ac.currentTime + 0.02, duration, 0.2));
 }
 
 export interface MelodyEvent {
@@ -48,10 +120,12 @@ export interface MelodyEvent {
 /** Schedule a melody with sample-accurate Web Audio timing. */
 export function playMelody(events: MelodyEvent[], voice: Voice = "pluck"): void {
   const ac = audioContext();
-  const start = ac.currentTime + 0.05;
-  for (const e of events) {
-    playVoice(ac, voice, e.midi, start + e.at, e.duration, 0.18);
-  }
+  whenRunning(ac, () => {
+    const start = ac.currentTime + 0.05;
+    for (const e of events) {
+      playVoice(ac, voice, e.midi, start + e.at, e.duration, 0.18);
+    }
+  });
 }
 
 /* ------------------------------------------------------------------ */
