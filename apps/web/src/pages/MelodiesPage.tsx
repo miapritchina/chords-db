@@ -22,6 +22,7 @@ import { GuqinDiagram } from "@/modules/guqin/GuqinDiagram";
 import { FretboardDiagram } from "@/modules/instruments/FretboardDiagram";
 import { HarpStrings } from "@/modules/instruments/HarpStrings";
 import { melodyTrace } from "@/modules/melody/trace";
+import { useWorkbench } from "@/modules/melody/useWorkbench";
 import { ComposerPanel } from "@/modules/composer/ComposerPanel";
 import {
   cellsToEvents,
@@ -44,11 +45,23 @@ const STEPS = 16;
 const MAX_ROWS = 15;
 
 export function MelodiesPage() {
-  const [instrumentId, setInstrumentId] = useState("kalimba");
-  const [rootPc, setRootPc] = useState(0);
-  const [scaleId, setScaleId] = useState("major-pentatonic");
-  const [bpm, setBpm] = useState(100);
-  const [cells, setCells] = useState<MelodyCell[]>([]);
+  // Sketch, key, scale, tempo and harmony choice persist across reloads
+  // and instrument switches via a single stored workbench document.
+  const { state: wb, patch } = useWorkbench({
+    instrumentId: "kalimba",
+    rootPc: 0,
+    scaleId: "major-pentatonic",
+    bpm: 100,
+    cells: [],
+    chosen: [0, 0, 0, 0],
+  });
+  const { instrumentId, rootPc, scaleId, bpm, cells } = wb;
+  const setInstrumentId = (v: string) => patch({ instrumentId: v });
+  const setRootPc = (v: number) => patch({ rootPc: v });
+  const setScaleId = (v: string) => patch({ scaleId: v });
+  const setBpm = (v: number) => patch({ bpm: v });
+  const setCells = (v: MelodyCell[] | ((prev: MelodyCell[]) => MelodyCell[])) =>
+    patch((prev) => ({ cells: typeof v === "function" ? v(prev.cells) : v }));
   const [name, setName] = useState("");
   const [playhead, setPlayhead] = useState<number | null>(null);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -146,7 +159,7 @@ export function MelodiesPage() {
     <div className="space-y-6">
       {/* pickers */}
       <div className="flex flex-wrap items-center gap-3">
-        <Select value={instrumentId} onValueChange={(v) => { stop(); setInstrumentId(v); setCells([]); }}>
+        <Select value={instrumentId} onValueChange={(v) => { stop(); setInstrumentId(v); }}>
           <SelectTrigger className="w-52">
             <SelectValue />
           </SelectTrigger>
@@ -372,6 +385,8 @@ export function MelodiesPage() {
         bpm={bpm}
         steps={STEPS}
         voice={voice}
+        chosen={wb.chosen}
+        onChosenChange={(next) => patch({ chosen: next })}
         onAppend={(midi, step) => {
           setCells((prev) => [...prev, { step, midi }]);
           playNote(midi, 0.5, voice);
